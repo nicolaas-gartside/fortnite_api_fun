@@ -1,8 +1,5 @@
 # The purpose of this file is to extract my Fortnite player stats and to store in a database
-# Starting pre-requisites:
-# TODO: Figure out how to set up a testing docker container
-#   Perform using PyTest
-# TODO: Include command shortcut, similar to mac make file
+
 import requests as rq
 import os
 import pandas as pd
