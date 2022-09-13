@@ -40,10 +40,12 @@ class FortniteApi:
 
     @staticmethod
     def tabulate_data(data):
+        # The playlists import does not need any fancy transformations, this will broaden as I expand to other endpoints
         df = pd.json_normalize(data)
         return df
 
     # Refer to api_scripts/helpers/db_connection.py for making the connection that is passed to this function
+    # This function unpacks the json into a table format and sends the data to a database
     def send_to_database(self, data, conn, table_name, if_exists):
         df = self.tabulate_data(data)
         df.to_sql(table_name, conn, schema=self.schema, if_exists=if_exists)
