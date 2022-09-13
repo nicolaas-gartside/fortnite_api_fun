@@ -1,3 +1,5 @@
 venv/
 
 .idea/
+
+api_scripts/__pycache__/
