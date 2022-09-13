@@ -1,4 +1,4 @@
-from api_scripts.fortnite_api_v2 import FortniteApi
+from api_scripts.fortnite_api_extract import FortniteApi
 from api_scripts.helpers.db_connection import DatabaseSetup
 import subprocess as ss
 
@@ -24,16 +24,17 @@ def test_fortnite_class():
     assert api_object.base_url == 'https://fortnite-api.com/'
 
 
+# This is just to ensure that docker container successfully started up and the postgres
+# Database can be accessed
 def test_docker_postgres_connection():
+    # Start the docker container for all tests
     start_docker_container()
     db = DatabaseSetup('docker_postgres')
     eng = db.create_eng()
     eng.connect()
-    stop_docker_container()
 
 
 def test_fortnite_get_request():
-    start_docker_container()
     api_object = FortniteApi(schema_name='fortnite_test')
     endpoint = 'playlists'
     data = api_object.get_data(endpoint)
@@ -43,4 +44,5 @@ def test_fortnite_get_request():
     with eng.connect() as conn:
         conn.execute('create schema if not exists fortnite_test')
         api_object.send_to_database(data, conn, 'fortnite_playlists', 'replace')
+    # Testing is over, turn off docker container
     stop_docker_container()
