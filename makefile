@@ -1,6 +1,6 @@
 test:
 	python -m pytest
 d_start:
-	docker start postgresql
+	docker compose up --detach
 d_stop:
-	docker stop postgresql
+	docker compose stop
