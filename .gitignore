@@ -5,3 +5,5 @@ venv/
 api_scripts/__pycache__/
 
 test_script/__pycache__/
+
+api_scripts/helpers/__pycache__/
