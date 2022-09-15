@@ -10,7 +10,7 @@ FORTNITE_ENDPOINTS = [
     'playlists',
     # 'cosmetics/br',
     # 'map',
-    'shop/br',
+    # 'shop/br',
     'stats/br/v2'
 ]
 
