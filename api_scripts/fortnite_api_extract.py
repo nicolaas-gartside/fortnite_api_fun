@@ -3,12 +3,24 @@
 import requests as rq
 import os
 import pandas as pd
+import sqlalchemy as sa
 
+FORTNITE_ENDPOINTS = [
+    'banners',
+    'playlists',
+    # 'cosmetics/br',
+    # 'map',
+    'shop/br',
+    'stats/br/v2'
+]
 
-ENDPOINT_V_LOOKUP = {
-    'playlists': 'v1/',
-    'stats/br/v2?': 'v2/'
-}
+V1_ENDPOINTS = [
+    'banners',
+    'playlists',
+    'map',
+    'news',
+    'stats/br/v2'
+]
 
 
 class FortniteError(Exception):
@@ -17,23 +29,26 @@ class FortniteError(Exception):
 
 class FortniteApi:
     def __init__(self, name=None, schema_name='fortnite'):
-        self.api_key = os.environ['fortnite_api_key']
-        self.header = self.api_key
         self.base_url = 'https://fortnite-api.com/'
-        self.name = name
-        self.schema=schema_name
+        self.schema = schema_name
 
-    def get_data(self, end_point):
+    def request_from_api(self, end_point):
+        version = 'v1/' if end_point in V1_ENDPOINTS else 'v2/'
         args = {
-            'url': self.base_url + ENDPOINT_V_LOOKUP[end_point] + end_point,
+            'url': self.base_url + version + end_point,
         }
-        if self.name:
+        if end_point == 'stats/br/v2':
+            fortnite_name = os.environ['fortnite_player_id']
+            fortnite_api_key = os.environ['fortnite_api_key']
             added_values = {
-                'params': {'name': self.name},
-                'headers': {'Authorization': self.api_key}
+                'params': {'name': fortnite_name},
+                'headers': {'Authorization': fortnite_api_key}
             }
             args.update(added_values)
-        response = rq.get(**args)
+        return rq.get(**args)
+
+    def get_data(self, end_point):
+        response = self.request_from_api(end_point)
         if response.status_code != 200:
             raise FortniteError(f'Bad request: {response.text}')
         return response.json()['data']
@@ -48,4 +63,4 @@ class FortniteApi:
     # This function unpacks the json into a table format and sends the data to a database
     def send_to_database(self, data, conn, table_name, if_exists):
         df = self.tabulate_data(data)
-        df.to_sql(table_name, conn, schema=self.schema, if_exists=if_exists)
+        df.to_sql(table_name, conn, schema=self.schema, if_exists=if_exists, dtype=sa.types.Text)

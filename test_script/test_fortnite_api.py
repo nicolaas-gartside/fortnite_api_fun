@@ -1,4 +1,4 @@
-from api_scripts.fortnite_api_extract import FortniteApi
+from api_scripts.fortnite_api_extract import FortniteApi, FORTNITE_ENDPOINTS
 from api_scripts.helpers.db_connection import DatabaseSetup
 import subprocess as ss
 
@@ -13,6 +13,16 @@ def stop_docker_container():
 
 def assert_testing():
     return True
+
+
+def perform_extract(api_object, endpoint):
+    data = api_object.get_data(endpoint)
+    assert data
+    db = DatabaseSetup('docker_postgres')
+    eng = db.create_eng()
+    with eng.connect() as conn:
+        conn.execute('create schema if not exists fortnite_test')
+        api_object.send_to_database(data, conn, 'fortnite_playlists', 'replace')
 
 
 def test_pytest():
@@ -37,12 +47,13 @@ def test_docker_postgres_connection():
 def test_fortnite_get_request():
     api_object = FortniteApi(schema_name='fortnite_test')
     endpoint = 'playlists'
-    data = api_object.get_data(endpoint)
-    assert data
-    db = DatabaseSetup('docker_postgres')
-    eng = db.create_eng()
-    with eng.connect() as conn:
-        conn.execute('create schema if not exists fortnite_test')
-        api_object.send_to_database(data, conn, 'fortnite_playlists', 'replace')
+    perform_extract(api_object, endpoint)
+
+
+def test_fortnite_endpoints():
+    api_object = FortniteApi(schema_name='fortnite_test')
+    for endpoint in FORTNITE_ENDPOINTS:
+        print(endpoint)
+        perform_extract(api_object, endpoint)
     # Testing is over, turn off docker container
     stop_docker_container()

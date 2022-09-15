@@ -3,3 +3,5 @@ venv/
 .idea/
 
 api_scripts/__pycache__/
+
+test_script/__pycache__/
