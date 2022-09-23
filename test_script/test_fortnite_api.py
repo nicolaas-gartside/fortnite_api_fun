@@ -20,9 +20,10 @@ def perform_extract(api_object, endpoint):
     assert data
     db = DatabaseSetup('docker_postgres')
     eng = db.create_eng()
+    table_name = endpoint.replace('/br', '').replace('/v2', '')
     with eng.connect() as conn:
         conn.execute('create schema if not exists fortnite_test')
-        api_object.send_to_database(data, conn, 'fortnite_playlists', 'replace')
+        api_object.send_to_database(data, conn, table_name, 'replace')
 
 
 def test_pytest():
@@ -30,7 +31,7 @@ def test_pytest():
 
 
 def test_fortnite_class():
-    api_object = FortniteApi()
+    api_object = FortniteApi(schema_name='fortnite_test')
     assert api_object.base_url == 'https://fortnite-api.com/'
 
 
