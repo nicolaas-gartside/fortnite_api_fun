@@ -89,11 +89,20 @@ class FortniteApi:
                 df[column] = None
         return df
 
+    def correct_column_data_types(self, table_name, df):
+        whitelist = self.whitelist[self.whitelist['table_name'] == table_name]
+        for column in df.columns:
+            c_data_type = whitelist[whitelist['current_column_name'] == column]['column_data_type'].values[0]
+            if c_data_type == 'text':
+                df[column] = df[column].astype(str).replace('None', None)
+        return df
+
     def tabulate_data(self, data, table_name):
         # The playlists import does not need any fancy transformations, this will broaden as I expand to other endpoints
         df = pd.json_normalize(data)
         print('Tabulating table:', table_name)
-        if table_name == 'shop':
+        correct_types = df
+        if table_name == 'fortnite_shop':
             batch_hash = df['hash'].values[0]
             list_dfs = []
             for i in SHOP_COLUMN_NAMES_TO_BE_EXTRACTED:
@@ -103,8 +112,9 @@ class FortniteApi:
                 list_dfs.append(remove_unnecessary_column)
             for i in range(len(list_dfs)):
                 list_dfs[i] = self.make_columns_consistent(table_name, list_dfs[i])
-            df = pd.concat(list_dfs)
-        return df
+            df = pd.concat(list_dfs).reset_index().drop('index', axis=1)
+            correct_types = self.correct_column_data_types(table_name, df)
+        return correct_types
 
     # Refer to api_scripts/helpers/db_connection.py for making the connection that is passed to this function
     # This function unpacks the json into a table format and sends the data to a database

@@ -20,7 +20,7 @@ def perform_extract(api_object, endpoint):
     assert data
     db = DatabaseSetup('docker_postgres')
     eng = db.create_eng()
-    table_name = endpoint.replace('/br', '').replace('/v2', '')
+    table_name = 'fortnite_' + endpoint.replace('/br', '').replace('/v2', '')
     with eng.connect() as conn:
         conn.execute('create schema if not exists fortnite_test')
         api_object.send_to_database(data, conn, table_name, 'replace')
